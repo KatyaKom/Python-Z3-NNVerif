@@ -1,0 +1,988 @@
+\documentclass{beamer}
+
+\usetheme{default}
+\usecolortheme{rose}
+
+\definecolor{verdeuni}{rgb}{0.7,0.73437,0.55856}
+\setbeamertemplate{headline}[verdeuni]
+%\setbeamercovered{highly dinamic}
+%\usepackage{eso-pic}
+
+\usepackage{amsfonts,amsmath,amssymb,amsthm}
+\usepackage[all]{xy}
+\usepackage{array,url}
+%\usepackage[latin1]{inputenc}
+\usepackage[spanish]{babel}
+\usepackage{color}
+%\usepackage{url}
+\usepackage{hyperref}
+\usepackage{fancyvrb}
+%\usepackage{tikz}
+\usepackage{alltt}
+%\usepackage{etex, xy}
+%\usepackage{cibeamer}
+%\usepackage{tikz}
+%\xyoption{all} 
+\usepackage{cancel, comment}
+\usepackage{verbatim}
+\usepackage{slashbox}
+%\usetikzlibrary{decorations.pathreplacing,shapes.arrows}
+\newcommand\BackgroundPicture[1]{%
+  \setbeamertemplate{background}{%
+   \parbox[c][\paperheight]{\paperwidth}{%
+      \vfill \hfill
+\includegraphics[width=1\paperwidth,height=1\paperheight]{#1}
+        \hfill \vfill
+     }}}
+\usepackage{xcolor,colortbl}
+\usepackage{listings}
+\definecolor{Gray}{gray}{0.85}
+
+%\newcommand{\rrdc}{\mbox{\,\(\Rightarrow\hspace{-9pt}\Rightarrow\)\,}} % Right reduction
+%\newcommand{\lrdc}{\mbox{\,\(\Leftarrow\hspace{-9pt}\Leftarrow\)\,}}% Left reduction
+%\newcommand{\lrrdc}{\mbox{\,\(\Leftarrow\hspace{-9pt}\Leftarrow\hspace{-5pt}\Rightarrow\hspace{-9pt}\Rightarrow\)\,}} % Equivalence
+%\DeclareMathOperator{\id}{Id}
+%\newcommand{\Zset}{\mathbb{Z}}
+%\newcommand{\Bset}{\mathbb{Z}_2}
+
+\setbeamertemplate{navigation symbols}{}
+
+\mode<presentation>
+\title[Part 2, Lecture 1]{F20DL and F21DL: Part 2, Machine Learning\\ Lecture 9. Further Topics in Neural Networks}
+\author[K. Komendantskaya]{Katya Komendantskaya}
+\date{}
+
+\begin{document}
+\BackgroundPicture{logo0.png}
+
+\begin{frame}
+\titlepage
+\end{frame}
+
+\begin{frame}
+  \frametitle{Plan for today}
+
+  \begin{itemize}
+  \item Remaining considerations about Neural nets
+  \item Further (Research) topics in Neural nets:
+    \begin{itemize}
+      \item Neural net verification
+      \item Convolutional Neural nets
+      \end{itemize}
+    \end{itemize}
+  \end{frame}
+
+\begin{frame}
+\frametitle{}
+\begin{block}{
+\begin{center}
+Neural Nets
+\end{center}
+ }
+\begin{center}
+Some considerations on the engineering side
+\end{center}
+\end{block}
+\end{frame}
+
+
+\begin{frame}
+\frametitle{Some generic advice:}
+\begin{itemize}
+\item The neural net size will depend on the size of your data: the input layer will be as big as many features you have; the output layer -- as big as you have \lq\lq{}labels\rq\rq{}/classes.
+\pause
+\item Often the software you use will determine these parameters at the time you load your data.
+\pause
+\item You will still have to provide: number of hidden layers and their size, learning parameters (learning rate, learning function); and preferred activation functions;
+ \item Extra layers are needed to handle \lq\lq{}non-linearly separable\rq\rq{} data; and to make classification more precise. 
+\pause
+ \item How many layers will work best for your example? -- is determined experimentally. You will notice that after some point adding more layers no longer improves accuracy but still consumes time; may even lead to overfitting
+\end{itemize}
+
+\end{frame}
+
+\begin{frame}
+\frametitle{Some generic advice:}
+\begin{itemize}
+\item Whether the data is linearly separable or not does not depend on the size of the set or the number of features -- see XOR example. Generally, just using 1-2 extra layers is a good rule of thumb.
+%\pause
+%\item How do you divide data into training and testing sets? Generally you want as much of data as possible for the training stage; as Neural  nets do not \lq\lq{}learn\rq\rq{} during testing. Still, you want to be able to test, to know how accurate your neural net is! So, 80\%/20\% or 70\%/30\% is a standard split; e.g. Matlab Neural net toolbox asks you about the ratio explicitly and then does random split.
+%\pause
+%\item Sometimes \lq\lq{}cross-validation\rq\rq{} is used: the neural net is trained and tested on several random splittings of data, and then the performance is averaged.
+  
+\end{itemize}
+
+\end{frame}
+
+\begin{frame}
+\frametitle{Some generic advice:}
+\begin{itemize}
+%\item Relation to Bayes rule: in Question-3 we all re-computed probabilities of our classes using the Bayes rule. Neural nets do the same; with the difference that we \lq\lq{}factored in\rq\rq{} only one parameter, and Neural nets do it for the  full combination of features. 
+  
+ \item What should I do if the accuracy is low? -- You will need to understand where the problem lies. 
+\pause
+ 
+   \begin{enumerate}
+   \item May be you need to tune Neural net parameters (number of layers, learning rate, etc) \pause
+   \item May be your data is badly split: e.g. your training examples have little in common with your testing examples. So, you are training or testing on non-representative sets
+	\pause
+   \item May be your feature extraction is not representative: e.g. your features are \lq\lq{}gender\rq\rq{} and \lq\lq{}nationality\rq\rq{} when you are trying to determine customer preferences -- such features are not enough!
+   \end{enumerate}  
+  
+\end{itemize}
+
+\end{frame}
+
+
+
+\begin{frame}
+\frametitle{Some generic advice:}
+\begin{itemize}
+\item How many features can one have? -- you can have many, if you have plenty of data ( many tools will require some ratio between the number of features and the number of training examples). ... Could be hundreds of features; but generally, people avoid adding too many, as excessive feature increase may affect ability to learn efficiently.
+\pause
+
+\item Feature \lq\lq{}values\rq\rq{} do not have to be binary; in fact, often it is un-natural for them to be binary. Our example was: feature \lq\lq{}email short\rq\rq{}? One would better reformulate and have a feature \lq\lq{}number of lines\rq\rq{}.
+
+%\pause
+%\item The professional Neural net software is fast, and you can process really big data in it. %; -- the more data the better, when learning is concerned.
+  
+
+  
+\end{itemize}
+
+\end{frame}
+
+
+%\begin{frame}
+%\frametitle{Some generic advice:}
+%\gbein{itemize}
+
+  
+% \item Neural nets is a statistical tool -- so results may differ from run to run. There are approaches, like \lq\lq{}cross-validation\rq\rq{}, to run training and testing in stages (and then taking some averaged results) that will deal with that. In Matlab or Weka, some are automatically incorporated. 
+  
+
+
+ % \item Neural nets are one of the most powerful machine-learning methods on the market, competing with SVMs and Decision trees.  
+  
+%\end{itemize}
+
+%\end{frame}
+
+
+
+
+
+%\section{More of Technical details/algorithms}
+
+
+
+\begin{frame}
+\frametitle{}
+\begin{block}{
+\begin{center}
+Deep Neural Nets
+\end{center}
+ }
+\begin{center}
+Further Research topics:\\
+Convolutional Neural nets
+\end{center}
+\end{block}
+\end{frame}
+
+
+
+\begin{frame}
+\frametitle{Research topics in Neural nets}
+
+\begin{block}{Convolutional Neural nets}
+\pause
+\begin{itemize}
+	\item a special kind of deep neural nets
+	\pause
+	\item No longer fully connected, remaining connections give the ``convolutions''
+	\pause
+		\item These convolutions usually work for graphical representation of data (e.g. pixels), so they are good for Computer vision
+	\pause
+	\item use some additional activation functions, such as RELU
+\end{itemize}
+
+\end{block}
+\end{frame}
+
+\begin{frame}
+\frametitle{NB: Zoo of activation functions}
+
+\includegraphics[width=10cm]{activation-functions}
+\end{frame}
+
+
+\begin{frame}
+\frametitle{Main idea}
+\begin{block}{Last week, we had only fully-connected neural nets:}
+\includegraphics[width=10cm]{Trans-NN-5-6-8}
+
+It made sense for the shopping data set, as all features were equal.
+\end{block}
+\pause However, what if we have some structure in data?
+\end{frame}
+
+
+\begin{frame}
+\frametitle{Images}
+\begin{block}{In images, we have some spacial information
+ }
+Not all pixels are equally placed relative to each other:
+\includegraphics[width=9cm]{label_1}
+\end{block}
+\end{frame}
+
+\begin{frame}
+\frametitle{Images}
+\begin{block}{So, why not take into account the pixel proximity
+ }
+when constructing neural nets?
+\includegraphics[width=9cm]{label_1}
+\end{block}
+\end{frame}
+
+
+\begin{frame}
+\frametitle{Convolutional NN in 3 ideas}
+\begin{enumerate}
+	\item \alert{Local receptive fields}
+	\item \alert{Shared weights}
+	\item \alert{Pooling}
+\end{enumerate}
+\end{frame}
+
+\begin{frame}
+\frametitle{}
+\begin{block}{
+\begin{center}
+Convolutional Neural Nets
+\end{center}
+ }
+\begin{center}
+1. Local Receptive Feilds
+\end{center}
+\end{block}
+\end{frame}
+
+\begin{frame}
+\frametitle{Input images in 2D}
+\begin{block}{Lets not flatten data and neurons into vectors, and instead take them in 2D:
+ }
+\begin{center}
+\includegraphics[width=5cm]{2D}
+\end{center}
+
+\end{block}
+\end{frame}
+
+\begin{frame}
+\frametitle{Local Receptive Field}
+\begin{block}{Lets not connect every input pixel to every input neuron!
+ }
+\begin{itemize}
+	\item take instead small region (say $5 \times 5$ )
+	\item and connect it to 1 neuron
+\item 	it will be the \alert{local receptive field} 
+\end{itemize}
+
+\begin{center}
+\includegraphics[width=5cm]{region}
+\end{center}
+
+
+\end{block}
+\end{frame}
+
+\begin{frame}
+\frametitle{Local Receptive Field}
+\begin{block}{Mathematically speaking
+ }
+\begin{itemize}
+	\item this neuron is defined just like the neuron in our previous lectures (\alert{same formula!})
+	\item it learns/adjusts the input weights
+\item 	it learns/adjusts its bias
+\end{itemize}
+
+\begin{center}
+\includegraphics[width=5cm]{region}
+\end{center}
+
+
+\end{block}
+\end{frame}
+
+\begin{frame}
+\frametitle{Local Receptive Field}
+\begin{block}{Finally,
+ }
+\begin{itemize}
+	\item \alert{make sure you systematically cover all possible receptive feilds!}
+\end{itemize}
+\end{block}
+
+\includegraphics[width=5.3cm]{rf1} \ \ \
+\includegraphics[width=5.3cm]{rf2}
+
+\end{frame}
+
+\begin{frame}
+\frametitle{Local Receptive Field}
+\begin{block}{Finally,
+ }
+\begin{itemize}
+	\item \alert{make sure you systematically cover all possible receptive fields!}
+	\item Our street signs were $48 \times 48$ \pause
+	\item How many hidden neurons do we need to cover all receptive fields if each is $5 \times 5$? \pause
+  \item  $44 \times 44$
+	\item but we can move with bigger step -- it is known as \alert{stride length}
+	\item e.g. move each new receptive field by 2 pixels at a time
+\end{itemize}
+\end{block}
+\end{frame}
+
+
+\begin{frame}
+\frametitle{}
+\begin{block}{
+\begin{center}
+Convolutional Neural Nets
+\end{center}
+ }
+\begin{center}
+2. Shared Weights and Biases
+\end{center}
+\end{block}
+\end{frame}
+
+\begin{frame}
+\frametitle{Shared weights and biases}
+\begin{block}{Each hidden neuron:
+ }
+\begin{itemize}
+	\item has a $5 \times 5$ weights/connections
+	\item \alert{use same weights for each of $44 \times 44$ hidden neurons!}
+	\pause \item for the $j,k$th hidden neuron: 
+\end{itemize}
+
+$$ v^{out}_{j,k} =  \sigma (\sum_{l=0}^{4}\sum_{m=0}^{4} w_{l,m} \times v^{in}_{j+l,k+m} + \Theta_{j,k}) $$ 
+
+\pause
+\begin{itemize}
+	\item Note: the only difference with the first NN lecture -- we refer to array, rather than a vector of neurons, hence the double indices.
+	\pause \item Otherwise, it is the same definition of a neuron
+	\item We could write it  in ``flat style'' -- 25 weights would multiply by 25 input signals (and then sum up)
+\end{itemize}
+
+\end{block}
+\end{frame}
+
+\begin{frame}
+\frametitle{Shared weights and biases}
+\begin{block}{Implications of weight sharing
+ }
+\begin{itemize}
+	\item all hidden neurons learn the same feature (e.g. ``vertical line in the receptive field'')
+	\item but at different locations
+	\pause \item great for capturing invariants in different places of the image
+	\pause \item This layer is called a \alert{feature map}.
+   
+\end{itemize}
+
+\end{block}
+\end{frame}
+
+\begin{frame}
+\frametitle{Shared weights and biases}
+\begin{block}{And what if we guess that there may be more features than 1?
+ }
+\begin{itemize}
+	\item take several feature maps!
+\end{itemize}
+
+\includegraphics[width=6.5cm]{fm}
+
+\end{block}
+%Example: CNN called LeNet-5 (available in Weka) used $5 \times 5$ local receptive field and 6 feature maps to recognise MNIST data set. 
+\end{frame}
+
+\begin{frame}
+\frametitle{Example}
+\begin{block}{Convolutional NN called \alert{LeNet-5}
+ }
+\begin{itemize}
+	\item used $5 \times 5$ local receptive field
+	\item and 6 feature maps \pause
+	\item to recognise MNIST data set (hand-written images) \pause
+	\item available in Weka, Python 
+ \end{itemize}
+
+
+
+\end{block}
+ 
+\end{frame}
+
+\begin{frame}
+\frametitle{Example: 20 feature maps}
+\begin{block}{What do the feature maps learn, exactly?}
+ \begin{center}
+\includegraphics[width=6cm]{6fm}
+\end{center}
+
+\end{block}
+\footnotesize{
+\begin{itemize}
+	%\item above is visual representation of 20 feature maps 
+	\item above is a  ``heat map'' of values of the learned $5 \times 5$ weights in each feature map. 
+	\item white --- ``colder'' (negative weight), black -- ``warmer'' (larger positive weight)
+	\item shows 20 features the convolutional layer responds to
+\end{itemize}}
+ 
+\end{frame}
+
+\begin{frame}
+\frametitle{Shared weights and biases}
+\begin{block}{Implications of weight sharing, ctd
+ }
+\begin{itemize}
+	\pause \item \alert{Feature maps save computational space and time:}
+	\pause \item \alert{suppose 1 feature map is given by $5 \times 5 = 25$ weights (plus bias).
+	Suppose we have 20 such. }
+	\pause \item \alert{so, our convolutional layer has $26 \times 20 = 520$ weights to learn.  (the image size does not matter!) }
+	\pause \item \alert{Suppose now we have street sign image -- 2305 pixels/input neurons connected to 30 neurons in the hidden layer in MLP: $2305 \times 30 = 69150$}
+\end{itemize}
+
+\end{block}
+\end{frame}
+
+
+\begin{frame}
+\frametitle{}
+\begin{block}{
+\begin{center}
+Convolutional Neural Nets
+\end{center}
+ }
+\begin{center}
+3. Pooling layers
+\end{center}
+\end{block}
+\end{frame}
+
+\begin{frame}
+\frametitle{Pooling layer}
+\begin{block}{Pooling layer
+ }
+\begin{itemize}
+ \item follows just after convolutional layer
+	\pause \item further simplifies its output
+	\pause \item condenses each feature map
+\end{itemize}
+\includegraphics[width=6.5cm]{pool}
+\begin{itemize}
+	\item take a maximum value of the chosen outputs (\alert{max-pooling})
+	\item or any other suitable function: square root of the sum of squares (\alert{L2 pooling})
+\end{itemize}
+\end{block}
+\end{frame}
+
+\begin{frame}
+\frametitle{Pooling layer}
+\begin{center}
+\includegraphics[width=5.5cm]{pool2}
+\end{center}
+\begin{block}{A quiz!
+ }
+
+\begin{itemize}
+ \item We had $48 \times 48$ image
+\item mapped to $44 \times 44$ hidden neurons (feature maps)
+\item suppose we took 3 such  feature maps
+\pause \item How many neurons will we need in the convolutional layer?
+ \pause\item suppose the pooling maps $2 \times 2$ region to 1 neuron
+
+ \item How many neurons will we need in the pooling layer?
+\end{itemize}
+
+\end{block}
+
+\pause
+\alert{we go from $3 \times 44 \times 44$ to $3 \times 22 \times 22$}
+\end{frame}
+
+\begin{frame}
+\frametitle{Pooling layer}
+\begin{block}{The intuition: }
+\begin{itemize}
+\item What does each of those $3 \times 44 \times 44$ do?
+\pause \item Responds to the presence of feature $i = 1,2,3$ in the given region of the actual image
+\pause \item The max pooling layer abstracts from the location
+\pause \item and checks whether the feature is present in the neighbourhood
+
+\end{itemize}
+
+\end{block}
+
+
+\end{frame}
+
+\begin{frame}
+\frametitle{}
+\begin{block}{
+\begin{center}
+Convolutional Neural Nets
+\end{center}
+ }
+\begin{center}
+Finally we assemble the network
+\end{center}
+\end{block}
+\end{frame}
+
+\begin{frame}
+\frametitle{Convolutional Neural net}
+\begin{center}
+\includegraphics[width=6.5cm]{CNN}
+\end{center}
+\begin{block}{
+ }
+
+\begin{itemize}
+ \item We had $48 \times 48$ image
+\item and say $3$  feature maps $44 \times 44$ neurons each
+\item then $3$ sets of  $22 \times 22$ pooling neurons
+\item and finally ... \pause \alert{the fully connected layer with 10 output neurons}, one for each class of street signs!
+
+\end{itemize}
+
+\end{block}
+
+\end{frame}
+
+\begin{frame}
+\frametitle{Convolutional Neural net}
+\begin{center}
+\includegraphics[width=6.5cm]{CNN}
+\end{center}
+\begin{block}{ \alert{How about training?}
+ }
+\pause
+\begin{itemize}
+ \item Same game as with perceptron \pause
+\item updates weights and biases \pause
+\item uses gradient descent and backpropagation \pause
+\item so no new Maths in the department!
+\item just see the formulas in previous lectures
+\item they apply directly, only not all weights are present for training! 
+
+\end{itemize}
+
+\end{block}
+
+\end{frame}
+
+
+\begin{frame}
+\frametitle{}
+\begin{block}{
+\begin{center}
+Convolutional Neural Nets:
+\end{center}
+ } 
+\begin{center}
+Quick Demo
+\end{center}
+\end{block}
+\end{frame}
+
+\begin{frame}
+\frametitle{Practical implications}
+\begin{block}{Remember
+ }
+\begin{itemize}
+	\item You now have to obtain and keep the 2D structure of the data set \pause
+	\item no feature removing/selection, as convolutions will do it instead \pause
+ \item you have to stack several convolutional, pooling, dropout, dense layers, but you have to know what you are doing, as not every random combination will work \pause 
+\item it will help if you know how many features you want to find in data
+\item You can tune other parameters: activation functions,  number of rows and columns in the local receptive field (kernel),  stride length, pooling parameters...
+\end{itemize}
+\end{block}
+\end{frame}
+
+\begin{frame}
+\frametitle{}
+\begin{block}{
+\begin{center}
+Deep Neural Nets
+\end{center}
+ }
+\begin{center}
+Further Research topics:\\
+ Neural net verification
+\end{center}
+\end{block}
+\end{frame}
+
+\begin{frame}
+  \frametitle{Pervasive AI...}
+
+  
+ \begin{columns}
+\column{.4\textwidth}
+  
+  \uncover<2->{\begin{block}{Autonomous cars}
+     \begin{center}  \includegraphics[scale=.20]{acar.jpeg}  \end{center} 
+  \end{block}}
+
+  
+   \uncover<4->{
+  \begin{block}{Robotics}
+   \begin{center}  \includegraphics[scale=.20]{robot.jpeg}  \end{center} 
+ \end{block}}
+
+\column{.4\textwidth}
+
+\uncover<3->{\begin{block}{Smart Homes}
+      \begin{center}  \includegraphics[scale=.20]{smarthome.jpeg}  \end{center} 
+  \end{block}}
+
+   \uncover<5->{
+    \begin{block}{Chat Bots}
+     \begin{center}  \includegraphics[scale=.20]{chatbot.jpeg}  \end{center} 
+   \end{block}}
+
+  \end{columns}
+
+  
+   \uncover<6>{
+    \begin{block}{}
+      \begin{center} ...and many more ...
+      %  : from finance market bots to personal devices like insullin controllers
+     % \end{center}
+   % \end{block}}
+  
+  % \uncover<6>{
+  %  \begin{block}{}
+  %    \begin{center}
+        AI is in urgent need of verification: safety, security, robustness to changing conditions and adversarial attacks, ...
+				\end{center}
+    \end{block}}
+
+  \end{frame}
+	
+	\begin{frame}
+  \frametitle{Neural Nets in Massive use}
+ 
+
+    
+ \begin{columns}
+   \column{.4\textwidth}
+
+   
+    \begin{center}
+      \includegraphics[scale=0.3]{NN}
+    \end{center}  
+
+\begin{block}{Used for:}
+
+ \begin{itemize}
+  \item computer vision 
+  \item speech recognition
+  \item  (big) data processing
+    \item ...
+    \end{itemize}
+
+  
+\end{block}
+
+
+
+
+
+\column{.4\textwidth}
+
+ 
+\begin{block}{In:}
+ 
+\begin{itemize}
+\item autonomous cars
+\item robots
+\item airport security
+  \item financial applications
+\item $\ldots$
+\item Alexa
+\item Google bot on mobile phones
+\item image recognising apps 
+\end{itemize}
+
+  \end{block}
+
+
+ \end{columns}
+    
+\end{frame}
+
+\begin{frame}
+\frametitle{Research topics in Neural nets}
+\begin{block}{Weaknesses of Neural nets}
+\begin{itemize}
+	\item not easily conceptualised (\alert{lack of explainability})
+	\item prone to error
+	\item prone to adversarial attack
+\end{itemize}
+\end{block}
+\end{frame}
+
+
+
+\begin{frame}
+\frametitle{Research topics in Neural nets - 2}
+
+
+
+\includegraphics[width=9cm]{panda}
+\pause
+
+\begin{itemize}
+	\item Verification needed: many issues with safety (autonomous devices, cars), security (adversarial attacks)
+	\item Problem: -- even to state verification conditions!
+	\item Current methods: Neurons to Logic (\emph{\'a la} McCulloch and Pitts), Automated Theorem proving, SMT solvers
+\end{itemize}
+%\pause
+%\alert{I will give a short intro to verification of NN in python next week} (non-compulsory)
+\end{frame}
+
+  \begin{frame}
+  \frametitle{The literature splits}
+       \begin{block}{There are two groups of properties we may want to verify:}
+\begin{itemize}
+\item  \alert{General (concerning properties of learning algorithms):} e.g. how well does the learning algorithm perform? do trained  neural networks generalise well?\\
+
+    {\scriptsize
+ \begin{thebibliography}{99}
+ \beamertemplatearticlebibitems
+\bibitem{1}{A. Bagnall and G. Stewart. Certifying the True Error: Machine Learning in Coq with Verified Generalisation Guarantees. AAAI 2019.}
+  \bibitem{4}{A. Bahrami, E. de Maria and A.Felty. Modelling and Verifying Dynamic Properties of Biological Neural Networks in Coq. 2018.}
+ \end{thebibliography}}
+  
+          \pause
+        \item  \alert{Specific to applications (concerning neural network deployment):} given this trained neural network, is it robust to adversarial attacks?
+
+    {\scriptsize
+ \begin{thebibliography}{99}
+ \beamertemplatearticlebibitems
+\bibitem{2}{X. Huang and M. Kwiatkowska and S. Wang and M. Wu. Safety Verification of Deep Neural Networks. CAV (1) 2017: 3-29}
+\bibitem{3}{G. Singh, T. Gehr, M. Puschel, M. T. Vechev:
+An abstract domain for certifying neural networks. PACMPL 3(POPL): 41:1-41:30 (2019)}
+  \end{thebibliography}}
+          
+          \end{itemize}
+          \end{block}
+          \end{frame}
+
+
+
+\begin{frame}
+  \frametitle{Neural nets and verification}
+  \begin{block}{Should Neural net verification be different from any other kind of verification?}
+    \begin{itemize}
+    \item In principle, -- No. But there are a few specific features:
+      \begin{itemize}
+      \item the object we verify (neural net) is not programmed but obtained via learning from data.\\
+        \alert{We may be interested in either the learning algorithms or the properties of the resulting net.} \pause
+      \item its outputs have statistical/probabilistic nature\\
+        \alert{We may be interested in verifying probabilistic properties} \pause
+      \item we have to be able to work with real numbers, not integers or bits\\
+        \alert{Real numbers are a challenge for provers, especially based on constructive logic}
+  
+        \end{itemize}
+      \end{itemize}
+    
+    \end{block}
+  \end{frame}
+	
+	\begin{frame}[fragile]
+      \frametitle{Robustness Verification scenario}
+			\begin{block}{SMT Solvers}
+			
+			\begin{itemize}
+				\item Widely used in verification \pause
+				\item Z3 is one of the most popular \pause
+				\item There is Z3 API in Python \pause
+				\item It is often used in NN verification \pause
+			\end{itemize}
+			\end{block}
+			\alert{Example of Z3 Python API at work:}
+			\begin{verbatim}
+			from z3 import *
+
+x = Int('x')
+y = Int('y')
+solve(x > 2, y < 10, x + 2*y == 7)
+
+			\end{verbatim}
+			\pause
+			
+			\begin{itemize}
+				\item will find all solutions or say that no exist
+			\end{itemize}
+				\end{frame}
+	
+		\begin{frame}[fragile]
+      \frametitle{General motivation}
+			
+			General motivation is to make  the solver:
+			
+			
+			\begin{itemize}
+				\item solve constraints like:			
+			\begin{verbatim}
+	(forall m n. ( (m >=. 0.5R) /\ (n >=. 0.5R)) ==> 
+	    (nextoutput perceptron [m ; n]) == 1)
+	\end{verbatim}
+	\pause \item ... that is, to guarantee correctness of inputs for certain small range of deviations from the well-classified input
+	\pause \item If the new image does not fall within the set constraints, it cannot be guaranteed to be robust to attack
+	\pause \item Imagine an autonomous car passing control to a human if it cannot guarantee robust recognition of some crucial street signs. 
+
+			\end{itemize}
+	\end{frame}
+	
+	\begin{frame}[fragile]
+      \frametitle{Simple Robustness Verification scenario}
+      \begin{itemize}
+      \item Implement my Perceptron in Python \pause
+      \item Prove it is robust for class 1: \pause
+        \begin{itemize}
+      \item Define its robustness region: e.g. when input array contains real values in 
+        the region $\epsilon = [0.5 ; 1.5]$ \pause
+      \item define a step function (``the ladder'') to generate a finite number of reals in this region (or Z3 will not terminate) \pause
+      \item Prove the ladder is ``covering'' (using pen and paper) \pause
+      \item  Take the set of input matrices generated by Z3, run them through the Perceptron \pause
+        \item No mis-classification? -- I have proven my network robust for output $1$, region $\epsilon$ and the ladder.
+\end{itemize}
+\end{itemize}
+\pause \alert{I will share a small Python script example on Vision}
+
+%\pause
+
+%\begin{block}{Problems}
+%  \begin{itemize}
+%  \item No direct access to Perceptron implementation from Z3
+%  \item Fragility of type conversion between Python and Z3
+%    \item Either ``Testing flavour'' or manual proofs are needed
+%    \end{itemize}
+%  \end{block}
+
+      \end{frame}
+	
+	
+
+\begin{frame}
+\frametitle{}
+\begin{block}{
+\begin{center}
+F21DL Part -2 Summary
+\end{center}
+ }
+\begin{center}
+...a few final words...
+\end{center}
+\end{block}
+\end{frame}
+
+\begin{frame}
+\frametitle{Course summary: has the plan worked? }
+
+
+\begin{block}{}
+ We had 5 weeks of lectures, covering \alert{major groups of ML methods}
+\end{block}
+
+	\begin{itemize}
+	\item Bayesian Probabilities, 
+	\item Unsupervised learning (Clustering) and 
+	\item three major Supervised Learning Methods:
+	\begin{itemize}
+		\item  Decision trees, 
+		\item Linear Regression, 
+		\item Neural Nets,
+		\item a few research topics in NNs...
+	\end{itemize}
+	\end{itemize}
+	\end{frame}
+	
+
+
+	
+\begin{frame}
+\frametitle{Course summary: has the plan worked? }
+	
+\begin{block}{My goals were:}
+\end{block}
+
+\begin{itemize}
+	\item Give you ``simple enough'' material so that you can understand every little detail as your ``own''. 
+	\pause
+	
+	\item Expose you to the challenges of the area: 
+	\begin{itemize}
+		\item Theoretical -- its strong rootings in Linear Algebra, Probability Theory and Statistics; 
+		\item and Practical -- Search spaces are too big, complexities too high -- therefore much of work in the area is about finding good parameters and heuristics for some local kinds of problems.
+	\end{itemize}
+
+\pause
+
+\item Give you a lot of practice -- hence many demos, practical tests, and big Coursework assignments
+
+\begin{itemize}
+\item Tests were to support your understanding of lectures, and prepare you for CW1-2.
+	\item In CW1-2 it was crucial for you to get an experience with data of real-life industrial size
+	\item Some problems: complexity of algorithms, redundancy of features are not really seen on small data sets, 
+	\item it was crucial for you to see them.
+\end{itemize}
+
+\end{itemize}
+
+
+\end{frame}
+
+
+\begin{frame}
+\frametitle{The end}
+
+ When you use ML in your future work, I hope that your clear knowledge of ``simple things'' will support you, and help you to have a firm ground when you need to tackle harder problems.
+
+\begin{block}{Thanks for your attention,}
+questions, hard work, enthusiasm...
+\end{block}
+\pause
+
+\begin{itemize}
+	\item Good luck with  CW2!
+	\item Any questions -- please ask by email 
+\item Week 12 -- revision lecture (by Diana); labs are on for any final help with test or CW2.
+\item Final CW2 interviews -- Week 12.
+
+\end{itemize}
+
+%\alert{Best of luck with the rest of your courses and studies}
+%\pause
+%\begin{block}{}
+%10 min feedback session
+%\end{block}
+
+
+\end{frame}
+
+%\begin{itemize}
+%\item Linear regression
+%\item Linear function
+%\item Squashed linear functions
+%\end{itemize}
+
+\end{document}
