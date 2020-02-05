@@ -5,13 +5,17 @@
 
 from z3 import *
 
-s = SolverFor("LRA") # Quantified Linear Integer Arithmetic
-x = Real('x')
-y = Real('y')
-u = Real('u')
-v = Real('v')
+# Firstly, we can specify the Z3 theories we want to call
+s = SolverFor("LRA") # Quantified Linear Real Arithmetic
+x = Int('x')
+y = Int('y')
+u = Int('u')
+v = Int('v')
 a = 5.0
 b = 7.0
+
+#Then we can use quantifiers to reason in those theories: 
+
 s.add(ForAll(u, Implies(u >= v,
                         Exists([x,y], And(x >= 0, y >= 0, u == a*x + b*y)))))
 print(s.check())

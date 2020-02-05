@@ -117,9 +117,7 @@ condd = (1 - X2[0])**2 + (1 - X2[1])**2 <= 0.5
 
 
 """ 
-  3. We explore a finite number of reals in the interval, by setting up a ladder. 
-  In good papers, there are theorems showing why the defined ladder is "covering" for the interval
-   epsilon is a ladder step: """
+  3. We explore a finite number of reals in the interval, by setting up a ladder.  In good papers, there are theorems showing why the defined ladder is "covering" for the interval. epsilon is a ladder step: """
 
 epsilon = 0.08
 ladder = [x*0.1 for x in range(1,100)]
