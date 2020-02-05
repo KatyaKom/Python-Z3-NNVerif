@@ -1,6 +1,6 @@
-
-
 from z3 import *
+
+"""This file illustrates the use of Z3 to find satisfiable assignments"""
 
 x = Int('x')
 y = Int('y')

@@ -1,4 +1,6 @@
 
+# This file illustrates the use of quantifiers in Z3 Theories
+
 # Given a supply of 5 and 7 cent stamps. Is there a lower bound, after which all denominations of stamps can be produced?
 
 from z3 import *

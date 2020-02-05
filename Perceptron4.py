@@ -1,9 +1,7 @@
-# This file is a Demo given at Big Proof on 27th May 2019
+# This file is a Demo of a simple NN verification approach, a la
+# Safety Verification of Deep Neural Networks?Xiaowei Huang, Marta Kwiatkowska, Sen Wang and Min Wu, https://arxiv.org/pdf/1610.06940.pdf
 
 import pandas as pd
-#import sklearn as sk
-
-#from sklearn import datasets
 import numpy as np
 
 ## We First Define a Perceptron ###
@@ -126,6 +124,8 @@ condd = (1 - X2[0])**2 + (1 - X2[1])**2 <= 0.5
 epsilon = 0.08
 ladder = [x*0.1 for x in range(1,100)]
 print("The ladder is: ", ladder)
+
+
 
 """ Conditions cond5 and cond6 define the range of values for "adversarial attacks" """
 cond5 = Or ([X2[0] == l * epsilon for l in ladder])
